@@ -11,7 +11,7 @@ namespace SqlHelper
     {
         private readonly StringBuilder _sql;
         internal StringBuilder SQL { get=>_sql; }
-        public SqlBuilder ()
+        private SqlBuilder ()
         {
             _sql = new StringBuilder();
         }

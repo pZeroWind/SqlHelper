@@ -112,6 +112,48 @@ namespace SqlHelper
         }
 
         /// <summary>
+        /// Having语句
+        /// </summary>
+        /// <param name="sqlBuilder"></param>
+        /// <param name="parameters"></param>
+        public static SqlBuilder Having<T>(this SqlBuilder sqlBuilder, T? parameters)
+        {
+            if (parameters != null)
+            {
+                var Props = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+                foreach (PropertyInfo prop in Props)
+                {
+                    if (prop.GetValue(parameters) != null && Props.First() == prop)
+                    {
+                        string? value = prop.GetValue(parameters)!.ToString();
+                        sqlBuilder.SQL.AppendLine($"HAVING {prop.Name} = '{value}'");
+                    }
+                    else if (prop.GetValue(parameters) != null)
+                    {
+                        string? value = prop.GetValue(parameters)!.ToString();
+                        sqlBuilder.SQL.AppendLine($"AND {prop.Name} = '{value}'");
+                    }
+                }
+            }
+            else
+            {
+                sqlBuilder.SQL.AppendLine("HAVING 1=1");
+            }
+            return sqlBuilder;
+        }
+
+        /// <summary>
+        /// Having语句
+        /// </summary>
+        /// <param name="sqlBuilder"></param>
+        /// <param name="parameters"></param>
+        public static SqlBuilder Having(this SqlBuilder sqlBuilder)
+        {
+            sqlBuilder.SQL.AppendLine("HAVING 1=1");
+            return sqlBuilder;
+        }
+
+        /// <summary>
         /// 排序
         /// </summary>
         /// <param name="sqlBuilder"></param>

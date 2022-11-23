@@ -14,8 +14,21 @@ namespace SqlHelper
         /// </summary>
         /// <param name="sqlBuilder"></param>
         /// <param name="sql"></param>
-        public static SqlBuilder SQL(this SqlBuilder sqlBuilder, string sql)
+        public static SqlBuilder SQL<T>(this SqlBuilder sqlBuilder, string sql = "",T? parameters = null) where T : class
         {
+            if (parameters != null)
+            {
+               var props = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+                foreach (PropertyInfo prop in props)
+                {
+                    if (prop.GetValue(parameters) != null)
+                    {
+                        string? value = prop.GetValue(parameters)!.ToString();
+                        sql!.Replace($"?:{prop.Name}",
+                        $"{prop.Name}='{(value == null ? "" : value)}'");
+                    }
+                }
+            }
             sqlBuilder.SQL.AppendLine(sql);
             return sqlBuilder;
         }
@@ -97,6 +110,7 @@ namespace SqlHelper
         /// </summary>
         /// <param name="sqlBuilder"></param>
         /// <param name="parameters"></param>
+        [Obsolete("建议直接使用SQL方法进行参数填充")]
         public static SqlBuilder SetParameter<T>(this SqlBuilder sqlBuilder, T parameters)
         {
             foreach (PropertyInfo prop in typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public))
