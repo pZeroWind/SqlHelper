@@ -1,4 +1,5 @@
 ﻿using SqlHelper.Enums;
+using SqlHelper.Structs;
 using System.Reflection;
 using System.Text;
 
@@ -102,12 +103,10 @@ namespace SqlHelper
         {
             foreach (var col in colunmNames)
             {
-                if (col == colunmNames.Last())
-                    sqlBuilder.SQL.AppendLine(col);
-                else if (col == colunmNames.First())
-                    sqlBuilder.SQL.AppendLine($"GROUP BY {col},");
+                if (col == colunmNames.First())
+                    sqlBuilder.SQL.AppendLine($"GROUP BY {col}");
                 else
-                    sqlBuilder.SQL.AppendLine(col + ",");
+                    sqlBuilder.SQL.AppendLine(","+col);
             }
             return sqlBuilder;
         }
@@ -119,9 +118,10 @@ namespace SqlHelper
         /// <param name="colunmName"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static SqlBuilder OrderBy(this SqlBuilder sqlBuilder, OrderType type = OrderType.ASC,params string[] colunmName)
+        public static SqlBuilder OrderBy(this SqlBuilder sqlBuilder, params OrderBy[] orderByModel)
         {
-            sqlBuilder.SQL.AppendLine($"ORDER BY {string.Join(',', colunmName)} {(Enum.GetName(type))}");
+            sqlBuilder.SQL.AppendLine($"ORDER BY " +
+                $"{string.Join(',', orderByModel.Select(p=> $"{p.ColunmName} {Enum.GetName(p.Type)}"))} ");
             return sqlBuilder;
         }
 
@@ -165,7 +165,7 @@ namespace SqlHelper
         /// <param name="tableName"></param>
         /// <param name="where"></param>
         /// <returns></returns>
-        public static SqlBuilder JoinOn(this SqlBuilder sqlBuilder,string tableName, string where, JoinType type)
+        public static SqlBuilder JoinOn(this SqlBuilder sqlBuilder,string tableName, string where, JoinType type = JoinType.INNER)
         {
             sqlBuilder.SQL.AppendLine($"{Enum.GetName(type)} JOIN {tableName} ON {where}");
             return sqlBuilder;

@@ -16,13 +16,59 @@ namespace SqlHelper
             _sql = new StringBuilder();
         }
 
+        #region 静态实例化方法
+        /// <summary>
+        /// 查询实例
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public static SqlBuilder InstanceSelect<T>(params string[] tableName) where T : class
+        {
+            return new SqlBuilder().Select<T>(tableName);
+        }
+
+        /// <summary>
+        /// 查询实例
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public static SqlBuilder InstanceSelect(string tableName, params string[] colNames)
+        {
+            return new SqlBuilder().Select(tableName, colNames);
+        }
+
+        /// <summary>
+        /// 更新实例
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public static SqlBuilder InstanceUpdate<T>(string tableName, T parameters)
+        {
+            return new SqlBuilder().Update(tableName, parameters);
+        }
+
+        /// <summary>
+        /// 更新实例
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public static SqlBuilder InstanceDelete(string tableName)
+        {
+            return new SqlBuilder().Delete(tableName);
+        }
+        #endregion
+
         /// <summary>
         /// 构建SQL语句
         /// </summary>
         /// <returns></returns>
         public string Build()
         {
-            return _sql.ToString().ToUpper();
+            return _sql.ToString();
         }
 
         /// <summary>

@@ -51,7 +51,10 @@ namespace SqlHelper
         /// <returns></returns>
         public static SqlBuilder Select(this SqlBuilder sqlBuilder, string tableName, params string[] colNames)
         {
-            sqlBuilder.SQL.AppendLine($"SELECT {string.Join(',', colNames)} FROM {tableName} ");
+            if (colNames.Length > 0)
+                sqlBuilder.SQL.AppendLine($"SELECT {string.Join(',', colNames)} FROM {tableName} ");
+            else
+                sqlBuilder.SQL.AppendLine($"SELECT * FROM {tableName} ");
             return sqlBuilder;
         }
 
@@ -60,13 +63,19 @@ namespace SqlHelper
         /// </summary>
         public static SqlBuilder Update<T>(this SqlBuilder sqlBuilder, string tableName, T parameters)
         {
-            sqlBuilder.SQL.AppendLine($"UPDATE INTO {tableName} SET ");
-            foreach (PropertyInfo prop in typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+            sqlBuilder.SQL.AppendLine($"UPDATE {tableName} SET ");
+            var Props = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            foreach (PropertyInfo prop in Props)
             {
-                if (prop.GetValue(parameters) != null)
+                if (prop.GetValue(parameters) != null&&prop == Props.First())
                 {
                     string? value = prop.GetValue(parameters)!.ToString();
-                    sqlBuilder.SQL.AppendLine($" {prop.Name}= '{value}', ");
+                    sqlBuilder.SQL.AppendLine($"{prop.Name}= '{value}'");
+                }
+                else if (prop.GetValue(parameters) != null)
+                {
+                    string? value = prop.GetValue(parameters)!.ToString();
+                    sqlBuilder.SQL.AppendLine($",{prop.Name}= '{value}'");
                 }
             }
             return sqlBuilder;
