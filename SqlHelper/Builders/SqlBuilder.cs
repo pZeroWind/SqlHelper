@@ -1,21 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SqlHelper
+namespace SqlHelper.Builders
 {
-    public class SqlBuilder
+    public class SqlBuilder:BaseSqlBuilder
     {
-        private readonly StringBuilder _sql;
-        internal StringBuilder SQL { get=>_sql; }
-        private SqlBuilder ()
-        {
-            _sql = new StringBuilder();
-        }
-
+        private SqlBuilder() { }
         #region 静态实例化方法
         /// <summary>
         /// 查询实例
@@ -25,7 +18,7 @@ namespace SqlHelper
         /// <returns></returns>
         public static SqlBuilder InstanceSelect<T>(params string[] tableName) where T : class
         {
-            return new SqlBuilder().Select<T>(tableName);
+            return (SqlBuilder)new SqlBuilder().Select<T>(tableName);
         }
 
         /// <summary>
@@ -36,7 +29,7 @@ namespace SqlHelper
         /// <returns></returns>
         public static SqlBuilder InstanceSelect(string tableName, params string[] colNames)
         {
-            return new SqlBuilder().Select(tableName, colNames);
+            return (SqlBuilder)new SqlBuilder().Select(tableName, colNames);
         }
 
         /// <summary>
@@ -47,50 +40,54 @@ namespace SqlHelper
         /// <returns></returns>
         public static SqlBuilder InstanceUpdate<T>(string tableName, T parameters)
         {
-            return new SqlBuilder().Update(tableName, parameters);
+            return (SqlBuilder)new SqlBuilder().Update(tableName, parameters);
         }
 
         /// <summary>
-        /// 更新实例
+        /// 删除实例
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="tableName"></param>
         /// <returns></returns>
         public static SqlBuilder InstanceDelete(string tableName)
         {
-            return new SqlBuilder().Delete(tableName);
+            return (SqlBuilder)new SqlBuilder().Delete(tableName);
         }
         #endregion
 
+        #region 数据库专用语句
         /// <summary>
-        /// 构建SQL语句
+        /// Limit语句(MySql)
         /// </summary>
         /// <returns></returns>
-        public string Build()
+        public SqlBuilder Limit(params int[] param)
         {
-            return _sql.ToString();
-        }
-
-        /// <summary>
-        /// 联结SQL语句
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <returns></returns>
-        public SqlBuilder Union(SqlBuilder builder)
-        {
-            _sql.AppendLine("UNION").AppendLine(builder.SQL.ToString());
+            if (param.Length > 0)
+            {
+                SQL.AppendLine($"LIMIT {string.Join(',', param.Take(2))}");
+            }
             return this;
         }
 
         /// <summary>
-        /// 联结SQL语句-不进行去重排序
+        /// Offset语句(SqlServer2012以上版本可用)
         /// </summary>
-        /// <param name="builder"></param>
         /// <returns></returns>
-        public SqlBuilder UnionALL(SqlBuilder builder)
+        public SqlBuilder Offset(int param)
         {
-            _sql.AppendLine("UNION ALL").AppendLine(builder.SQL.ToString());
+            SQL.AppendLine($"OFFSET {param} ROWS");
             return this;
         }
+
+        /// <summary>
+        /// Fetch(SqlServer2012以上版本可用)
+        /// </summary>
+        /// <returns></returns>
+        public SqlBuilder Fetch(int param)
+        {
+            SQL.AppendLine($"Fetch {param} ROWS ONLY");
+            return this;
+        }
+        #endregion
     }
 }
